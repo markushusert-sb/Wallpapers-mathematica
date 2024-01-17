@@ -134,8 +134,8 @@ creategroup[a_, b_, name_] := (
         <|"a" -> a, "b" -> b, "name" -> name, 
    "fundregnorm" -> wpfundregnorm[name], 
    "fundreg" -> ((Transpose[{a, b}] . #) & /@ (wpfundregnorm[name])), 
-   "gens" -> wpgens[name], "lvecmat" -> N[Transpose[{a, b}]], 
-   "lvecmatinv" -> N[Inverse[Transpose[{a, b}]]]|>
+   "gens" -> wpgens[name], "ltensinv" -> N[Transpose[{a, b}]], 
+   "ltens" -> N[Inverse[Transpose[{a, b}]]]|>
   )
 quotienttorusnorm[na_, nb_, group_] := 
  Module[{quotientele, cosets, i, ia, ib},
@@ -152,8 +152,8 @@ quotienttorusnorm[na_, nb_, group_] :=
         quotientele
   ]
 normedtotrafo[ele_, group_] := (
-  {(group["lvecmat"] ) . ele[[1]], (group["lvecmat"]) . 
-    ele[[2]] . (group["lvecmatinv"])}
+  {(group["ltensinv"] ) . ele[[1]], (group["ltensinv"]) . 
+    ele[[2]] . (group["ltens"])}
   )
 quotienttorus[na_, nb_, group_] := Module[{i, ia, ib},
         (*Generate all elements of quotient group with torus of na and nb \
@@ -172,7 +172,7 @@ quotientpatternnorm[na_, nb_, group_] :=
  applyquotienttofundreg[group["fundregnorm"], 
   quotienttorusnorm[na, nb, group]]
 quotientpattern[na_, nb_, group_] := 
- Map[(group["lvecmat"] . #) &, quotientpatternnorm[na, nb, group], {2}]
+ Map[(group["ltensinv"] . #) &, quotientpatternnorm[na, nb, group], {2}]
 
 (*returns list of transformed fundamental regions*)
 
