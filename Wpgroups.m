@@ -6,9 +6,9 @@ quotientpattern::usage="quotientpattern[ia,ib,group] returns list of lists of co
 wpgensquot::usage="wpgens[name] returns generators of quotient groups of <name> in normed form"
 wpfundregnorm::usage="wpfundregnorm[name] returns fundamental region in normed form of group <name>"
 wplattice::usage="wplattice[name] returns lattice type of group <name>"
+Needs["Patterns`"]
+Needs["Settings`"]
 Begin["`Private`"]
-dim=2
-vecpat={Repeated[_?NumericQ,{dim}]}(* pattern denoting vector of euclidean space to be treated*)
 wpgensquot = <|
    (*returns list of generators (in normed form) for quotient group \
 of given wp-group
@@ -86,25 +86,24 @@ fullfil*)
    };
 cosetop[x_, y_] := {x[[1]] + x[[2]] . y[[1]], 
   x[[2]] . y[[2]]} (*coset x multiplied with coset y*)
-gencosets[gens_] := Module[{donecosets, lastcosets, donetrafo},
-        lastcosets = donecosets = {{{0, 0}, {{1, 0}, {0, 1}}}};(* 
+gencosets[gens :{affineelepat..}] := Module[{donecosets, lastcosets, donetrafo},
+        lastcosets = donecosets = {identitytrafo};(* 
   identity coset*)
         donetrafo = {donecosets[[1]][[2]]};
-        If[Length[gens] > 0,
         While[Length[lastcosets] > 0,
         donecosets = 
       Join[donecosets, genlayercosets[gens, lastcosets, donetrafo]];
-        ]
         ];
         donecosets
   ]
-gencosets[gens_, fundnorm_] := Module[{},
+gencosets[gens : {},optionalArg___]:=({identitytrafo})
+gencosets[gens :{affineelepat..}, fundnorm :{vecpat ..}] := Module[{},
 				{#[[1]] - 
       Floor[Fold[{Min[#1[[1]], #2[[1]]], Min[#1[[2]], #2[[2]]]} &, {0,
-          0}, applyeuclidtoform[fundnorm, #]]], #[[2]]} & /@ 
+          0}, applyaffinetolist[fundnorm, #]]], #[[2]]} & /@ 
    gencosets[gens]
   ]
-genlayercosets[gens_, lastcosets_, donetrafo_] := 
+genlayercosets[gens :{affineelepat..}, lastcosets_, donetrafo_] := 
  Module[{potentcoset, cosets2add},
   cosets2add = {};
   Do [(
@@ -127,7 +126,7 @@ checklatticevec[a_, b_,
     rectang :> a . b == 0, crectang :> a . b == Norm[a]/2, 
     square :>  a . b == 0 && Norm[a] == Norm[b], 
     hexa :>  a . b - Norm[a]/2 == 0 && Norm[a] == Norm[b]};
-creategroup[a_, b_, name_String] := (
+creategroup[a : vecpat, b : vecpat, name_String] := (
         (*consists of Latticevec a, latticevec b, 
   list of generators of quotient group*)
         If [! checklatticevec[a, b, name],
@@ -138,7 +137,7 @@ creategroup[a_, b_, name_String] := (
    "gensquot" -> wpgensquot[name], "ltensinv" -> N[Transpose[{a, b}]], 
    "ltens" -> N[Inverse[Transpose[{a, b}]]]|>
   )
-quotienttorusnorm[na_, nb_, group_Association] := 
+quotienttorusnorm[na_Integer, nb_Integer, group_Association] := 
  Module[{quotientele, cosets, i, ia, ib},
         (*Generate all elements of quotient group (normalised w.r.t. 
   base vectors) with torus of na and nb*) 
@@ -152,29 +151,31 @@ quotienttorusnorm[na_, nb_, group_Association] :=
         {i, Length[cosets]}, {ia, na}, {ib, nb}];
         quotientele
   ]
-denorm[ele_, group_Association] := (
+denorm[ele : affineelepat, group_Association] := (
   {(group["ltensinv"] ) . ele[[1]], (group["ltensinv"]) . 
     ele[[2]] . (group["ltens"])}
   )
-quotienttorus[na_, nb_, group_Association] := Module[{i, ia, ib},
+quotienttorus[na_Integer, nb_Integer, group_Association] := Module[{i, ia, ib},
         (*Generate all elements of quotient group with torus of na and nb \
 times base vectors a and b
         in terms of euclidean trafo*)
         denorm[#, group] & /@ quotienttorusnorm[na, nb, group]
   ]
-applyeuclid[x_, euclid_] := euclid[[2]] . x + euclid[[1]]
-applyeuclidtoform[fundreg : {vecpat..}, euclid_] := 
- applyeuclid[#, euclid] & /@ fundreg 
-applyquotienttoform[fundreg : {vecpat..}, quotients_] := 
- (applyeuclidtoform[fundreg, #] & /@ quotients)
+applyaffine[x : vecpat, euclid : affineelepat] := euclid[[2]] . x + euclid[[1]]
+applyaffine[euclid : affineelepat,x : vecpat] := applyaffine[x,euclid]
+applyaffinetolist[fundreg : {vecpat..}, euclid : affineelepat] := 
+ applyaffine[#, euclid] & /@ fundreg 
+applyquotienttolist[fundreg : {vecpat..}, quotients : {affineelepat..}] := 
+ (applyaffinetolist[fundreg, #] & /@ quotients)
+applyquotienttolist[points_,quotients : {affineelepat..},depth_Integer] :=Outer[applyaffine,quotients,points,1,depth]
 
 SetAttributes[genlayercosets, HoldAll]
-quotientpatternnorm[na_, nb_, group_Association] := 
- (applyquotienttoform[group["fundregnorm"], 
+quotientpatternnorm[na_Integer, nb_Integer, group_Association] := 
+ (applyquotienttolist[group["fundregnorm"], 
   quotienttorusnorm[na, nb, group]])
-quotientpattern[na_, nb_, group_Association,forms : {{vecpat..}..} : {}] :=
-If[forms ==={},
- Map[(group["ltensinv"] . #) &, quotientpatternnorm[na, nb, group], {2}]] 
+quotientpattern[na_Integer, nb_Integer, group_Association] :=
+ Map[(group["ltensinv"] . #) &, quotientpatternnorm[na, nb, group], {2}] 
+quotientpattern[na_Integer, nb_Integer, group_Association,forms : {{vecpat..}..}] :=applyquotienttolist[forms,quotienttorus[na,nb,group],2]
 
 
 (*returns list of transformed fundamental regions*)
@@ -209,8 +210,10 @@ graficfund[
   points_] := {(pol = Polygon[points]; 
    Graphics[{LightGreen, EdgeForm[Dashed], pol}]), 
   Graphics[Line[lpointspoly[points]]]}
-quotientgrafics[na_, nb_, group_Association] := 
+quotientgrafics[na_Integer, nb_Integer, group_Association] := 
  graficfund /@ quotientpattern[na, nb, group]
+quotientgrafics[na_Integer, nb_Integer, group_Association,forms : {{vecpat..}..},plotfun_] := 
+ Map[plotfun,quotientpattern[na, nb, group,forms],{2}]
 End[]
 
 EndPackage[]
