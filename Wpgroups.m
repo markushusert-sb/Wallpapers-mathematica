@@ -57,7 +57,6 @@ wpfundregnorm = <|
    "p6" -> {{0, 0}, {0, 1}, {1/3, 1/3}},
    "p6m" -> {{0, 0}, {0, 1/2}, {1/3, 1/3}}
    |>;
-(* Conditions to be fulfilled by lattice vectors*)
 wplattice = <|
    (*returns list of generators for quotient group of given wp-group
    Form: (coord1,coord2,matrix representing action on lattice)*)
@@ -84,11 +83,10 @@ wpconds = {
 fullfil*)
    q_ :> ((wplattice[q]) /. Latticeconds)
    };
-cosetop[x_, y_] := {x[[1]] + x[[2]] . y[[1]], 
+cosetop[x :affineelepat, y:affineelepat] := {x[[1]] + x[[2]] . y[[1]], 
   x[[2]] . y[[2]]} (*coset x multiplied with coset y*)
 gencosets[gens :{affineelepat..}] := Module[{donecosets, lastcosets, donetrafo},
-        lastcosets = donecosets = {identitytrafo};(* 
-  identity coset*)
+        lastcosets = donecosets = {identitytrafo};
         donetrafo = {donecosets[[1]][[2]]};
         While[Length[lastcosets] > 0,
         donecosets = 
@@ -104,6 +102,7 @@ gencosets[gens :{affineelepat..}, fundnorm :{vecpat ..}] := Module[{},
    gencosets[gens]
   ]
 genlayercosets[gens :{affineelepat..}, lastcosets_, donetrafo_] := 
+ (*creates new layer of potential cosets, by right and left multiplying gens to lastcosets and und updating lastcosets and donetrafo after*)
  Module[{potentcoset, cosets2add},
   cosets2add = {};
   Do [(
@@ -121,7 +120,7 @@ genlayercosets[gens :{affineelepat..}, lastcosets_, donetrafo_] :=
    , {i, 1, Length[gens]}, {j, 1, Length[lastcosets]}];
   lastcosets = cosets2add
   ]
-checklatticevec[a_, b_, 
+checklatticevec[a :vecpat, b :vecpat, 
    name_] := (wplattice[name]) /. {oblique -> True, 
     rectang :> a . b == 0, crectang :> a . b == Norm[a]/2, 
     square :>  a . b == 0 && Norm[a] == Norm[b], 
@@ -151,6 +150,7 @@ quotienttorusnorm[na_Integer, nb_Integer, group_Association] :=
         {i, Length[cosets]}, {ia, na}, {ib, nb}];
         quotientele
   ]
+(*transform affine transformation from normed into real representation, that is why we use ltens inversely to the latex doc*)
 denorm[ele : affineelepat, group_Association] := (
   {(group["ltensinv"] ) . ele[[1]], (group["ltensinv"]) . 
     ele[[2]] . (group["ltens"])}
@@ -168,6 +168,7 @@ applyaffinetolist[fundreg : {vecpat..}, euclid : affineelepat] :=
 applyquotienttolist[fundreg : {vecpat..}, quotients : {affineelepat..}] := 
  (applyaffinetolist[fundreg, #] & /@ quotients)
 applyquotienttolist[points_,quotients : {affineelepat..},depth_Integer] :=Outer[applyaffine,quotients,points,1,depth]
+(*points is list of arbitrary depth of vecpats*)
 
 SetAttributes[genlayercosets, HoldAll]
 quotientpatternnorm[na_Integer, nb_Integer, group_Association] := 
@@ -180,7 +181,7 @@ quotientpattern[na_Integer, nb_Integer, group_Association,forms : {{vecpat..}..}
 
 (*returns list of transformed fundamental regions*)
 
-(*Visualize pattern*)
+(*Visualize pattern by calculating mass point of polygon and putting L shape in it*)
 areapoly[
   points_] := (Total[
    points*RotateLeft[points, {1, 1}] . {{1, 0}, {0, -1}}, 2])
@@ -198,6 +199,7 @@ vertlinepoly1[
 vertlinepoly[points_] := 
  vertlinepoly1[points]*
   Sign[vertlinepoly1[points] . (points[[3]] - points[[2]])]
+(*this function actually creates the points constistuting the L*)
 lpointspoly[points_] := 
  Map[-0.05*
      clenpoly[
