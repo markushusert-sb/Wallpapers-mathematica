@@ -170,18 +170,18 @@ applyaffinetolist[fundreg : {vecpat..}, euclid : affineelepat] :=
  applyaffine[#, euclid] & /@ fundreg 
 applyquotienttolist[fundreg : {vecpat..}, quotients : {affineelepat..}] := 
  (applyaffinetolist[fundreg, #] & /@ quotients)
-applyquotienttolist[points_,quotients : {affineelepat..}] :=(Outer[applyaffine,quotients,points,1,Depth[N[points]]-2])
+applyquotienttolist[points_?formsQ,quotients : {affineelepat..}] :=(Outer[applyaffine,quotients,points,1,Depth[N[points]]-2])
 (*points is list of arbitrary depth of vecpats*)
 
 SetAttributes[genlayercosets, HoldAll]
 quotientpatternnorm[na_Integer, nb_Integer, group_Association] := 
  (applyquotienttolist[group["fundregnorm"], 
   quotienttorusnorm[na, nb, group]])
-quotientpatternnorm[na_Integer, nb_Integer, group_Association,forms : {{vecpat..}..}] :=applyquotienttolist[forms,quotienttorusnorm[na,nb,group]]
+quotientpatternnorm[na_Integer, nb_Integer, group_Association,forms_?formsQ] :=applyquotienttolist[forms,quotienttorusnorm[na,nb,group]]
 (*no patterns specified, plot fundamental region*)
 quotientpattern[na_Integer, nb_Integer, group_Association] :=
  Map[denorm[#,group] &, quotientpatternnorm[na, nb, group], {2}] 
-quotientpattern[na_Integer, nb_Integer, group_Association,forms : {{vecpat..}..}] :=Map[denorm[#,group] &, quotientpatternnorm[na, nb, group,forms], {3}]
+quotientpattern[na_Integer, nb_Integer, group_Association,forms_?formsQ] :=Map[denorm[#,group] &, quotientpatternnorm[na, nb, group,forms], {3}]
 
 (*generate meshes*)
 quotientmeshgen[na_Integer, nb_Integer, group_Associatio,nfundmesh :{{vecpat..},{fundconnectpat..}}]:=Fold[connectfundregs,<|"N"->{},"C"->{},"CtoN"->{},"Nring"->{},"fconnect"->nfundmesh[[2]]|>,quotientpatternnorm[na,nb,group,nfundmesh[[1]]]]
