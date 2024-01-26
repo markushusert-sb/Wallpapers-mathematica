@@ -155,6 +155,9 @@ denorm[ele : affineelepat, group_Association] := (
   {(group["ltensinv"] ) . ele[[1]], (group["ltensinv"]) . 
     ele[[2]] . (group["ltens"])}
   )
+denorm[vec : vecpat, group_Association] := (
+  (group["ltensinv"]).vec 
+  )
 quotienttorus[na_Integer, nb_Integer, group_Association] := Module[{i, ia, ib},
         (*Generate all elements of quotient group with torus of na and nb \
 times base vectors a and b
@@ -167,19 +170,23 @@ applyaffinetolist[fundreg : {vecpat..}, euclid : affineelepat] :=
  applyaffine[#, euclid] & /@ fundreg 
 applyquotienttolist[fundreg : {vecpat..}, quotients : {affineelepat..}] := 
  (applyaffinetolist[fundreg, #] & /@ quotients)
-applyquotienttolist[points_,quotients : {affineelepat..},depth_Integer] :=Outer[applyaffine,quotients,points,1,depth]
+applyquotienttolist[points_,quotients : {affineelepat..}] :=(Outer[applyaffine,quotients,points,1,Depth[N[points]]-2])
 (*points is list of arbitrary depth of vecpats*)
 
 SetAttributes[genlayercosets, HoldAll]
 quotientpatternnorm[na_Integer, nb_Integer, group_Association] := 
  (applyquotienttolist[group["fundregnorm"], 
   quotienttorusnorm[na, nb, group]])
+quotientpatternnorm[na_Integer, nb_Integer, group_Association,forms : {{vecpat..}..}] :=applyquotienttolist[forms,quotienttorusnorm[na,nb,group]]
+(*no patterns specified, plot fundamental region*)
 quotientpattern[na_Integer, nb_Integer, group_Association] :=
- Map[(group["ltensinv"] . #) &, quotientpatternnorm[na, nb, group], {2}] 
-quotientpattern[na_Integer, nb_Integer, group_Association,forms : {{vecpat..}..}] :=applyquotienttolist[forms,quotienttorus[na,nb,group],2]
+ Map[denorm[#,group] &, quotientpatternnorm[na, nb, group], {2}] 
+quotientpattern[na_Integer, nb_Integer, group_Association,forms : {{vecpat..}..}] :=applyquotienttolist[forms,quotienttorus[na,nb,group]]
 
+(*generate meshes*)
+quotientmeshgen[na_Integer, nb_Integer, group_Associatio,nfundmesh :{{vecpat..},{fundconnectpat..}}]:=Fold[connectfundregs,<|"N"->{},"C"->{},"CtoN"->{},"Nring"->{},"fconnect"->nfundmesh[[2]]|>,quotientpatternnorm[na,nb,group,nfundmesh[[1]]]]
 
-(*returns list of transformed fundamental regions*)
+connectfundregs[state,newfundreg]:=a
 
 (*Visualize pattern by calculating mass point of polygon and putting L shape in it*)
 areapoly[
