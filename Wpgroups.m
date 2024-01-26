@@ -181,7 +181,7 @@ quotientpatternnorm[na_Integer, nb_Integer, group_Association,forms : {{vecpat..
 (*no patterns specified, plot fundamental region*)
 quotientpattern[na_Integer, nb_Integer, group_Association] :=
  Map[denorm[#,group] &, quotientpatternnorm[na, nb, group], {2}] 
-quotientpattern[na_Integer, nb_Integer, group_Association,forms : {{vecpat..}..}] :=applyquotienttolist[forms,quotienttorus[na,nb,group]]
+quotientpattern[na_Integer, nb_Integer, group_Association,forms : {{vecpat..}..}] :=Map[denorm[#,group] &, quotientpatternnorm[na, nb, group,forms], {3}]
 
 (*generate meshes*)
 quotientmeshgen[na_Integer, nb_Integer, group_Associatio,nfundmesh :{{vecpat..},{fundconnectpat..}}]:=Fold[connectfundregs,<|"N"->{},"C"->{},"CtoN"->{},"Nring"->{},"fconnect"->nfundmesh[[2]]|>,quotientpatternnorm[na,nb,group,nfundmesh[[1]]]]
