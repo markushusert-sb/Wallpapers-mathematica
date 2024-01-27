@@ -3,6 +3,7 @@ BeginPackage["Wpgroups`"]
 creategroup::usage="creategroup[a,b,name] returns lattice group name with base vectors a and b as mathematica associations" 
 quotientgrafics::usage="quotientgrafics[ia,ib,group] returns list of graphics objects for quotient group of wp-group <group> with <ia> and <ib> times its respective lattice vectors"
 quotientpattern::usage="quotientpattern[ia,ib,group] returns list of lists of coordinates of fund region  for quotient group of wp-group <group> with <ia> and <ib> times its respective lattice vectors" 
+quotientmeshgen::usage="quotientmeshgen[ia,ib,group,fundmesh] returns lists of lists of vecpats corresponging to orbit of fundmesh under group (with duplicates removed)"
 wpgensquot::usage="wpgens[name] returns generators of quotient groups of <name> in normed form"
 wpfundregnorm::usage="wpfundregnorm[name] returns fundamental region in normed form of group <name>"
 wplattice::usage="wplattice[name] returns lattice type of group <name>"
@@ -186,19 +187,7 @@ quotientpattern[na_Integer, nb_Integer, group_Association] :=
 quotientpattern[na_Integer, nb_Integer, group_Association,forms_?formsQ] :=Map[denorm[#,group] &, quotientpatternnorm[na, nb, group,forms], {3}]
 
 (*generate meshes*)
-quotientmeshgen[na_Integer, nb_Integer, group_Association,nfundmesh :{{vecpat..},{fundconnectpat..}}]:=Fold[connectfundregs,<|"N"->{},"C"->{},"CtoN"->{},"Nring"->{},"fconnect"->nfundmesh[[2]]|>,quotientpatternnorm[na,nb,group,nfundmesh[[1]]]]
-
-(*state is an association with
-N-> {vecpat..} coordinates of what will be the corners of our polygons
-C-> {vecpat..} coordinates of points at the edge of fundreg that serve to connect the corners
-CtoN->{Integer} Cton[[i]] is the corner belonging to connection i
-Nring->{{Integer..}..}
-fconnect->{{i_Interger,{j_Integer..}}} list defining i to be a node connected via connections j to other fundamental regions*)
-connectfundregs[state_Association,newfundreg:{vecpat..}]:=(Fold[(onenodeoffundreg[#1,newfundreg,#2]&),state,state["fconnect"]])
-(*connect specifying connectivity of fundreg, see fconnect*)
-onenodeoffundreg[state_Association,newfundreg:{vecpat..},connect:{_Integer,{_Integer..}}]:=With[{npos=newfundreg[[connect[[1]]]],connectposs=newfundreg[[connect[[2]]]]},
-With[{nid=FirstPosition[state["N"],nodepos,(AppendTo[state["N"],nodepos];Length[state["N"]])]}]](*nid of node the connections are pointing to*)
-
+quotientmeshgen[na_Integer, nb_Integer, group_Association,nfundmesh :{{vecpat..}..}]:=DeleteDuplicates /@ (quotientpatternnorm[na,nb,group,#]&)/@ nfundmesh
 (*Visualize pattern by calculating mass point of polygon and putting L shape in it*)
 areapoly[
   points_] := (Total[
