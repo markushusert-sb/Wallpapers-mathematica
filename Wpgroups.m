@@ -95,6 +95,7 @@ gencosets[gens :{affineelepat..}] := Module[{donecosets, lastcosets, donetrafo},
         donecosets
   ]
 gencosets[gens : {},optionalArg___]:=({identitytrafo})
+(*shift coset representatives so that all fundamental regions lie in parallelipe spanned by lattice vectors*)
 gencosets[gens :{affineelepat..}, fundnorm :{vecpat ..}] := Module[{},
 				{#[[1]] - 
       Floor[Fold[{Min[#1[[1]], #2[[1]]], Min[#1[[2]], #2[[2]]]} &, {0,
@@ -181,12 +182,22 @@ quotientpatternnorm[na_Integer, nb_Integer, group_Association,forms_?formsQ] :=a
 (*no patterns specified, plot fundamental region*)
 quotientpattern[na_Integer, nb_Integer, group_Association] :=
  Map[denorm[#,group] &, quotientpatternnorm[na, nb, group], {2}] 
+(*specify patterns in normed coordinates please*)
 quotientpattern[na_Integer, nb_Integer, group_Association,forms_?formsQ] :=Map[denorm[#,group] &, quotientpatternnorm[na, nb, group,forms], {3}]
 
 (*generate meshes*)
-quotientmeshgen[na_Integer, nb_Integer, group_Associatio,nfundmesh :{{vecpat..},{fundconnectpat..}}]:=Fold[connectfundregs,<|"N"->{},"C"->{},"CtoN"->{},"Nring"->{},"fconnect"->nfundmesh[[2]]|>,quotientpatternnorm[na,nb,group,nfundmesh[[1]]]]
+quotientmeshgen[na_Integer, nb_Integer, group_Association,nfundmesh :{{vecpat..},{fundconnectpat..}}]:=Fold[connectfundregs,<|"N"->{},"C"->{},"CtoN"->{},"Nring"->{},"fconnect"->nfundmesh[[2]]|>,quotientpatternnorm[na,nb,group,nfundmesh[[1]]]]
 
-connectfundregs[state,newfundreg]:=a
+(*state is an association with
+N-> {vecpat..} coordinates of what will be the corners of our polygons
+C-> {vecpat..} coordinates of points at the edge of fundreg that serve to connect the corners
+CtoN->{Integer} Cton[[i]] is the corner belonging to connection i
+Nring->{{Integer..}..}
+fconnect->{{i_Interger,{j_Integer..}}} list defining i to be a node connected via connections j to other fundamental regions*)
+connectfundregs[state_Association,newfundreg:{vecpat..}]:=(Fold[(onenodeoffundreg[#1,newfundreg,#2]&),state,state["fconnect"]])
+(*connect specifying connectivity of fundreg, see fconnect*)
+onenodeoffundreg[state_Association,newfundreg:{vecpat..},connect:{_Integer,{_Integer..}}]:=With[{npos=newfundreg[[connect[[1]]]],connectposs=newfundreg[[connect[[2]]]]},
+With[{nid=FirstPosition[state["N"],nodepos,(AppendTo[state["N"],nodepos];Length[state["N"]])]}]](*nid of node the connections are pointing to*)
 
 (*Visualize pattern by calculating mass point of polygon and putting L shape in it*)
 areapoly[

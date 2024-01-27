@@ -14,9 +14,15 @@ solveintersectsnub2[
   1 - Cos[phi]/((1 + Cot[phi]) (Cos[phi] + Sin[phi]))}
 (*points wrt coordinate system in inner square, which is rotated by 45 degrees*)
 pointsinnersnub[phi_] := {
-  {0,1-nsin[phi]},
+  {0,ncos[phi]},
   solveintersectsnub1[phi],
   solveintersectsnub2[phi]
+  }
+meshgensinnersnub[phi_] := {
+	{ncos[phi],0}
+  {0,nsin[phi]},
+	{ncos[phi],1},
+  {-ncos[phi],1}
   }
 (* Transformation obtained by:
 B={{B1,B2},{B3,B4}};
@@ -26,13 +32,14 @@ B.{0,1},{0,1/2}}],MapThread[Equal,{a+B.{1/2,1/2},{1/2,1/2}}]],{a1,a2,\
 B1,B2,B3,B4}];
 B/.s;
 a/.s;*)
-pointsoutersnub[phi_:Pi/6] := 
-  # - (# . {1, 1} - 1/2) & /@ Simplify[{{1/2, -(1/2)}, {1/2, 1/2}} . # + {1/2, 0} & /@ 
-    pointsinnersnub[phi]];
+inntertooutersnub[x:vecpat]:=# - (# . {1, 1} - 1/2) & [Simplify[{{1/2, -(1/2)}, {1/2, 1/2}} . x + {1/2, 0}]]
+
+pointsoutersnub[phi_:Pi/6] := inntertooutersnub /@ pointsinnersnub[phi]
 (*# - (# . {1, 1} - 1/2) & /@ serves to mirror to the right fundamental region*)
 (*forms triangle and quadrilateral needed to plot snub square, in normed coordinates*)
 formssnub[phi_:Pi/6]:={{{0,1/2},#[[1]],#[[3]]},{#[[1]],#[[2]],{0,0},#[[3]]},{#[[1]],#[[2]],{1/2,0}}}&[pointsoutersnub[phi]]
-meshgensnub[phi_:Pi/6]:={pointsoutersnub[phi],{{1,{2,3}}}}
+meshgensnubbak[phi_:Pi/6]:={pointsoutersnub[phi],{{1,{2,3}}}}
+meshgensouternub[phi_:Pi/6]:={inntertooutersnub /@ meshgensinnersnub[phi],{1,}}
 Options[graficsnubface]={colorsq->LightRed,colortr->LightBlue}
 graficsnubface[x:{vecpat..},OptionsPattern[]]:=(Graphics[{EdgeForm[Thickness[Small]],Length[x]/.{3->OptionValue@colortr,4->OptionValue@colorsq},Polygon[x]}])
 graficsnub[phi_:Pi/6]:=graficsnubface[#]&/@ formssnub[phi]
