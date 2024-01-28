@@ -9,6 +9,7 @@ wpfundregnorm::usage="wpfundregnorm[name] returns fundamental region in normed f
 wplattice::usage="wplattice[name] returns lattice type of group <name>"
 Needs["Patterns`"]
 Needs["Settings`"]
+Needs["NDSolve`FEM`"]
 Begin["`Private`"]
 wpgensquot = <|
    (*returns list of generators (in normed form) for quotient group \
@@ -187,7 +188,21 @@ quotientpattern[na_Integer, nb_Integer, group_Association] :=
 quotientpattern[na_Integer, nb_Integer, group_Association,forms_?formsQ] :=Map[denorm[#,group] &, quotientpatternnorm[na, nb, group,forms], {3}]
 
 (*generate meshes*)
-quotientmeshgen[na_Integer, nb_Integer, group_Association,nfundmesh :{{vecpat..}..}]:=DeleteDuplicates /@ (quotientpatternnorm[na,nb,group,#]&)/@ nfundmesh
+toindexform[points_?formsQ]:=Module[{val},
+	val=DeleteDuplicates[Flatten[points, Depth[N[points]]-3], sequal];
+	{val,Map[(FirstPosition[val, #][[1]] &), points, {Depth[N[points]]-2}]}
+]
+quotientmeshgen[na_Integer, nb_Integer, group_Association,nfundmesh :{{vecpat..}..}]:=Module[{cord,idx},
+		{val,idx}=toindexform[FullSimplify[(quotientpatternnorm[na,nb,group,#]&)/@ nfundmesh]];
+		idx=Map[Function[{plist},DeleteDuplicates[plist,(Union[#1] == Union[#2] &)]], idx, {1}];
+		ToElementMesh[ToBoundaryMesh["Coordinates"->val,"BoundaryElements"->LineElement[
+			Flatten[Function[{poly}, 
+   MapThread[List, ({#, RotateLeft[#]} &)[poly]]] /@ Flatten[idx, 1], 1]
+		]]]]
+quotientmeshgen1[na_Integer, nb_Integer, group_Association,nfundmesh :{{vecpat..}..}]:=
+	Map[(Polygon[#]&),
+		(quotientpatternnorm[na,nb,group,#]&)/@ nfundmesh,
+	{2}]
 (*Visualize pattern by calculating mass point of polygon and putting L shape in it*)
 areapoly[
   points_] := (Total[
