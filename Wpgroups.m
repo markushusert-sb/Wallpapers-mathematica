@@ -192,13 +192,17 @@ toindexform[points_?formsQ]:=Module[{val},
 	val=DeleteDuplicates[Flatten[points, Depth[N[points]]-3], sequal];
 	{val,Map[(FirstPosition[val, #][[1]] &), points, {Depth[N[points]]-2}]}
 ]
-quotientmeshgen[na_Integer, nb_Integer, group_Association,nfundmesh :{{vecpat..}..}]:=Module[{cord,idx},
+quotientmeshgen[na_Integer, nb_Integer, group_Association,nfundmesh :{{vecpat..}..},meshopts_:{}]:=Module[{cord,idx},
 		{val,idx}=toindexform[FullSimplify[(quotientpatternnorm[na,nb,group,#]&)/@ nfundmesh]];
 		idx=Map[Function[{plist},DeleteDuplicates[plist,(Union[#1] == Union[#2] &)]], idx, {1}];
-		ToElementMesh[ToBoundaryMesh["Coordinates"->val,"BoundaryElements"->LineElement[
+		val=(denorm[#,group]&)/@ val;
+		ToElementMesh[ToBoundaryMesh["Coordinates"-> val,"BoundaryElements"->LineElement[
 			Flatten[Function[{poly}, 
-   MapThread[List, ({#, RotateLeft[#]} &)[poly]]] /@ Flatten[idx, 1], 1]
-		]]]]
+   MapThread[List, ({#, RotateLeft[#]} &)[poly]]] /@ Flatten[idx, 1], 1]]	
+			],"RegionMarker"->Flatten[MapIndexed[
+  Function[{list, idxl}, Map[({Mean[val[[#]]], idxl[[1]]} &), list]], idx], 1]
+		,meshopts
+		]]
 quotientmeshgen1[na_Integer, nb_Integer, group_Association,nfundmesh :{{vecpat..}..}]:=
 	Map[(Polygon[#]&),
 		(quotientpatternnorm[na,nb,group,#]&)/@ nfundmesh,
