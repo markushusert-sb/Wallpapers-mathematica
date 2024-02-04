@@ -224,8 +224,7 @@ vertlinepoly1[
   Norm[points[[2]] - points[[1]]]
 vertlinepoly[points_] := 
  vertlinepoly1[points]*
-  Sign[vertlinepoly1[points] . (points[[3]] - points[[2]])]
-(*this function actually creates the points constistuting the L*)
+  Sign[vertlinepoly1[points] . (points[[3]] - points[[2]])](*this function actually creates the points constistuting the L*)
 lpointspoly[points_] := 
  Map[-0.05*
      clenpoly[

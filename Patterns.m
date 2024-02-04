@@ -1,8 +1,11 @@
 BeginPackage["Patterns`"]
 Needs["Settings`"]
 formssnub::usage="formssnub[phi] returns shapes (2x triangles, 1x quadrilateral) in fundamental region of snub square of angle phi between skew square and its bounding square"
+formssnubwf::usage="formssnubwf[phi] returns wireframe in fundamental region of snub square of angle phi"
+formssnubp4m::usage="formssnub[phi] returns shapes (2x triangles, 1x quadrilateral) in fundamental region of p4m for snub square of angle phi between skew square and its bounding square"
 graficsnub::usage="graficsnub[phi] returns grafic object of fundamental region of snub square of angle phi"
 graficsnubface::usage="graficsnubspace[x] where x ist list of list of points plots snubspace indicated by forms in x"
+graficswireframe::usage="graficsnubspace[x,color] where x ist list of list of points and color is an optional color"
 meshgensoutersnub::usage="meshgensoutersnub[phi] returns corners of 2 quad-shells who construct a sunb-square under action of p4g"
 Begin["`Private`"]
 nsin[x_] := Sin[x]/(Sin[x] + Cos[x])
@@ -39,13 +42,20 @@ B/.s;
 a/.s;*)
 (*# - (# . {1, 1} - 1/2) & /@ serves to mirror to the right fundamental region*)
 inntertooutersnub[x:vecpat]:=# - (# . {1, 1} - 1/2) & [Simplify[{{1/2, -(1/2)}, {1/2, 1/2}} . x + {1/2, 0}]]
+inntertooutersnubp4m[x:vecpat]:=({{0, 1}, {-1, 0}}.#)+{0,1/2} & [Simplify[{{1/2, -(1/2)}, {1/2, 1/2}} . x + {1/2, 0}]]
 
 pointsoutersnub[phi_:Pi/6] := inntertooutersnub /@ pointsinnersnub[phi]
+pointsoutersnubp4m[phi_:Pi/6] := inntertooutersnubp4m /@ pointsinnersnub[phi]
 (*forms triangle and quadrilateral needed to plot snub square, in normed coordinates*)
 formssnub[phi_:Pi/6]:={{{0,1/2},#[[1]],#[[3]]},{#[[1]],#[[2]],{0,0},#[[3]]},{#[[1]],#[[2]],{1/2,0}}}&[pointsoutersnub[phi]]
+formssnubwf[phi_:Pi/6]:={{#[[2]],#[[1]],#[[3]]}}&[pointsoutersnub[phi]]
+formssnubp4m[phi_:Pi/6]:={{{1/2,1/2},#[[1]],#[[3]]},{#[[1]],#[[2]],{1/2,0},#[[3]]},{#[[1]],#[[2]],{0,0}}}&[pointsoutersnubp4m[phi]]
 meshgensoutersnub[phi_:Pi/6]:=Map[inntertooutersnub,meshgensinnersnub[phi],{2}]
 Options[graficsnubface]={colorsq->LightRed,colortr->LightBlue}
 graficsnubface[x:{vecpat..},OptionsPattern[]]:=(Graphics[{EdgeForm[Thickness[Small]],Length[x]/.{3->OptionValue@colortr,4->OptionValue@colorsq},Polygon[x]}])
+graficswireframe[x:{vecpat..},color: _?validColorQ : RGBColor["green"]]:=Graphics[
+	{Thickness[Large],color,Line[x]}
+]
 graficsnub[phi_:Pi/6]:=graficsnubface[#]&/@ formssnub[phi]
 End[]
 EndPackage[]
