@@ -3,6 +3,7 @@ Needs["Settings`"]
 formssnub::usage="formssnub[phi] returns shapes (2x triangles, 1x quadrilateral) in fundamental region of snub square of angle phi between skew square and its bounding square"
 formssnubwf::usage="formssnubwf[phi] returns wireframe in fundamental region of snub square of angle phi"
 formssnubp4m::usage="formssnub[phi] returns shapes (2x triangles, 1x quadrilateral) in fundamental region of p4m for snub square of angle phi between skew square and its bounding square"
+formsmaster::usage="formsmaster[form:String,param] selects suitable form based on argument form"
 graficsnub::usage="graficsnub[phi] returns grafic object of fundamental region of snub square of angle phi"
 graficsnubface::usage="graficsnubspace[x] where x ist list of list of points plots snubspace indicated by forms in x"
 graficswireframe::usage="graficsnubspace[x,color] where x ist list of list of points and color is an optional color"
@@ -47,12 +48,18 @@ inntertooutersnubp4m[x:vecpat]:=({{0, 1}, {-1, 0}}.#)+{0,1/2} & [Simplify[{{1/2,
 pointsoutersnub[phi_:Pi/6] := inntertooutersnub /@ pointsinnersnub[phi]
 pointsoutersnubp4m[phi_:Pi/6] := inntertooutersnubp4m /@ pointsinnersnub[phi]
 (*forms triangle and quadrilateral needed to plot snub square, in normed coordinates*)
+formsmaster[form_String,params_:{}]:=(form/.{
+	"snub"->formssnub[],
+	"meshsnub"->meshgensoutersnub[],
+	"snubwf"->formssnubwf[],
+	"snubp4m"->formssnubp4m[]
+})
 formssnub[phi_:Pi/6]:={{{0,1/2},#[[1]],#[[3]]},{#[[1]],#[[2]],{0,0},#[[3]]},{#[[1]],#[[2]],{1/2,0}}}&[pointsoutersnub[phi]]
 formssnubwf[phi_:Pi/6]:={{#[[2]],#[[1]],#[[3]]}}&[pointsoutersnub[phi]]
 formssnubp4m[phi_:Pi/6]:={{{1/2,1/2},#[[1]],#[[3]]},{#[[1]],#[[2]],{1/2,0},#[[3]]},{#[[1]],#[[2]],{0,0}}}&[pointsoutersnubp4m[phi]]
 meshgensoutersnub[phi_:Pi/6]:=Map[inntertooutersnub,meshgensinnersnub[phi],{2}]
-Options[graficsnubface]={colorsq->LightRed,colortr->LightBlue}
-graficsnubface[x:{vecpat..},OptionsPattern[]]:=(Graphics[{EdgeForm[Thickness[Small]],Length[x]/.{3->OptionValue@colortr,4->OptionValue@colorsq},Polygon[x]}])
+Options[graficsnubface]={colorsq->LightRed,colortr->LightBlue,opts->{EdgeForm[Thickness[Small]]}}
+graficsnubface[x:{vecpat..},OptionsPattern[]]:=(Graphics[Join[OptionValue@opts,{Length[x]/.{3->OptionValue@colortr,4->OptionValue@colorsq},Polygon[x]}]])
 graficswireframe[x:{vecpat..},color: _?validColorQ : RGBColor["green"]]:=Graphics[
 	{Thickness[Large],color,Line[x]}
 ]
