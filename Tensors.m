@@ -4,7 +4,8 @@ rotmath::usage="rotmath[p] yields rotation matrix in harmonic base for turning a
 harmdecomp::usage="harmdecomp[tens] yields harmonic decomposition of 4th order tensor in Mandel notation" 
 invariants::usage="invariants[tens] yields 5 invariants of 4th order tensor in Mandel notation" 
 cauchyschwartz::usage="cauchyschwartz[I2_,J2_,J3_] yields cauchy schwartz inegality" 
-
+thk::usage="tensor as a function of harmonic decomposition in kelvin notation"
+Kscal::usage="Scale to pass from "
 Begin["`Private`"]
 ktoh = {{Sqrt[2]/2, 0, Sqrt[2]/2}, {-Sqrt[2]/2, 0, Sqrt[2]/2}, {0, 1, 
     0}};(*transformation matrix between kelvin and harmonic \
@@ -32,10 +33,14 @@ tkk[k_] := k (Outer[Times, ik, ik])
 tyk[y_] := y*jk
 thk := Dmatk[D1, D2] + tdk[d1, d2] + tkk[k] + tyk[y]
 thh := turn[thk, ktoh]
-(*decompose tensor in mandel notation*)
-harmdecomp[tens_] := 
+(*decompose tensor in voigt notation*)
+harmdecomp[tens_?MatrixQ/;AnyTrue[Flatten[tens],(!NumericQ[#]&)]] :=(Print["in symbolic version"];
   Solve[thh == turn[(Kscal*tens), ktoh], {D1, D2, d1, d2, y, 
-     k}][[1]];
+     k}][[1]])
+tv = {{T1111, T1122, T1112}, {T1122, T2222, T1222}, {T1112, T1222,
+    T1212}};
+tvharmdecomp=harmdecomp[tv];
+harmdecomp[tens_?MatrixQ/;MatrixQ[tens,(NumericQ[#]&)]]:=tvharmdecomp /. {T1111->tens[[1,1]],T1122->tens[[1,2]],T2222->tens[[2,2]],T1222->tens[[2,3]],T1112->tens[[1,3]],T1212->tens[[3,3]]}
 invariants[tens_] := 
   FullSimplify[{k, y, dk[d1, d2] . dk[d1, d2], 
      Tr[Dmatk[D1, D2] . Dmatk[D1, D2]], 
