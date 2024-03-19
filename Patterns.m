@@ -44,6 +44,7 @@ a/.s;*)
 (*# - (# . {1, 1} - 1/2) & /@ serves to mirror to the right fundamental region*)
 inntertooutersnub[x:vecpat]:=# - (# . {1, 1} - 1/2) & [Simplify[{{1/2, -(1/2)}, {1/2, 1/2}} . x + {1/2, 0}]]
 inntertooutersnubp4m[x:vecpat]:=({{0, 1}, {-1, 0}}.#)+{0,1/2} & [Simplify[{{1/2, -(1/2)}, {1/2, 1/2}} . x + {1/2, 0}]]
+simplelaminate[]:={{{0,0},{1,0},{1,1/2},{0,1/2}},{{0,1/2},{1,1/2},{1,1},{0,1}}}
 
 pointsoutersnub[phi_:Pi/6] := inntertooutersnub /@ pointsinnersnub[phi]
 pointsoutersnubp4m[phi_:Pi/6] := inntertooutersnubp4m /@ pointsinnersnub[phi]
@@ -51,6 +52,7 @@ pointsoutersnubp4m[phi_:Pi/6] := inntertooutersnubp4m /@ pointsinnersnub[phi]
 formsmaster[form_String,params_:{}]:=(form/.{
 	"snub"->formssnub[],
 	"meshsnub"->meshgensoutersnub[],
+	"simple_laminate"->simplelaminate[],
 	"snubwf"->formssnubwf[],
 	"snubp4m"->formssnubp4m[]
 })
