@@ -34,7 +34,7 @@ tyk[y_] := y*jk
 thk := Dmatk[D1, D2] + tdk[d1, d2] + tkk[k] + tyk[y]
 thh := turn[thk, ktoh]
 (*decompose tensor in voigt notation*)
-harmdecomp[tens_?MatrixQ/;AnyTrue[Flatten[tens],(!NumericQ[#]&)]] :=(Print["in symbolic version"];
+harmdecomp[tens_?MatrixQ/;AnyTrue[Flatten[tens],(!NumericQ[#]&)]] :=(
   Solve[thh == turn[(Kscal*tens), ktoh], {D1, D2, d1, d2, y, 
      k}][[1]])
 tv = {{T1111, T1122, T1112}, {T1122, T2222, T1222}, {T1112, T1222,

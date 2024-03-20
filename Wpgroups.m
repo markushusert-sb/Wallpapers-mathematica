@@ -244,11 +244,11 @@ quotientmeshgen[na_Integer, nb_Integer, group_Association,nfundmesh :{{vecpat..}
 			,meshopts
 		]
 	]
-writegeo[val:{vecpat..},idx:{{{_Integer..}..}..},dir_:"."]:=(
-				Print["writing geo to ",dir];
+writegeo[val:{vecpat..},idx:{{{_Integer..}..}..},regions :{_Integer...},dir_:"."]:=(
+				Print["writing geo to ",AbsoluteFileName[dir],"regions",regions];
 				Export[FileNameJoin[{dir,"coords.csv"}],val];
 				Export[FileNameJoin[{dir,"connec.csv"}],Flatten[idx,1]];
-				Export[FileNameJoin[{dir,"regions.csv"}],Flatten[MapIndexed[(ConstantArray[#2,Length[#1]])&,idx]]])
+				Export[FileNameJoin[{dir,"regions.csv"}],Flatten[MapIndexed[(ConstantArray[If[Length[regions]>0,regions[[#2]],#2],Length[#1]])&,idx]]])
 (*Visualize pattern by calculating mass point of polygon and putting L shape in it*)
 areapoly[
   points_] := (Total[

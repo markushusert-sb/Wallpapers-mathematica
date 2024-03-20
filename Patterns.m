@@ -4,6 +4,7 @@ formssnub::usage="formssnub[phi] returns shapes (2x triangles, 1x quadrilateral)
 formssnubwf::usage="formssnubwf[phi] returns wireframe in fundamental region of snub square of angle phi"
 formssnubp4m::usage="formssnub[phi] returns shapes (2x triangles, 1x quadrilateral) in fundamental region of p4m for snub square of angle phi between skew square and its bounding square"
 formsmaster::usage="formsmaster[form:String,param] selects suitable form based on argument form"
+regionsmaster::usage="formsmaster[form:String] which material region is to be assigned to each shape defined by formsmaster, default returns empty list meaning materials are assigned in order of appearance"
 graficsnub::usage="graficsnub[phi] returns grafic object of fundamental region of snub square of angle phi"
 graficsnubface::usage="graficsnubspace[x] where x ist list of list of points plots snubspace indicated by forms in x"
 graficswireframe::usage="graficsnubspace[x,color] where x ist list of list of points and color is an optional color"
@@ -33,6 +34,12 @@ meshgensinnersnub[phi_] := {{
 	{0,-ncos[phi]},
   {-nsin[phi],0}}
   }
+meshgensp4gsquare[len_:1/2]:={{{1/2-len/2,1/2-len/2},{1/2+len/2,1/2-len/2},{1/2+len/2,1/2+len/2},{1/2-len/2,1/2+len/2}},
+{{1/2-len/2,1/2-len/2},{0,0},{1,0},{1/2+len/2,1/2-len/2}},
+{{1/2+len/2,1/2+len/2},{1,1},{1,0},{1/2+len/2,1/2-len/2}},
+{{1/2+len/2,1/2+len/2},{1,1},{0,1},{1/2-len/2,1/2+len/2}},
+{{1/2-len/2,1/2-len/2},{0,0},{0,1},{1/2-len/2,1/2+len/2}}
+}
 (* Transformation obtained by:
 B={{B1,B2},{B3,B4}};
 a={a1,a2};
@@ -52,10 +59,12 @@ pointsoutersnubp4m[phi_:Pi/6] := inntertooutersnubp4m /@ pointsinnersnub[phi]
 formsmaster[form_String,params_:{}]:=(form/.{
 	"snub"->formssnub[],
 	"meshsnub"->meshgensoutersnub[],
+	"p4gsquare"->meshgensp4gsquare[],
 	"simple_laminate"->simplelaminate[],
 	"snubwf"->formssnubwf[],
 	"snubp4m"->formssnubp4m[]
 })
+regionsmaster[form_String]:=form /.{"p4gsquare"->{1,2,2,2,2},_->{}}
 formssnub[phi_:Pi/6]:={{{0,1/2},#[[1]],#[[3]]},{#[[1]],#[[2]],{0,0},#[[3]]},{#[[1]],#[[2]],{1/2,0}}}&[pointsoutersnub[phi]]
 formssnubwf[phi_:Pi/6]:={{#[[2]],#[[1]],#[[3]]}}&[pointsoutersnub[phi]]
 formssnubp4m[phi_:Pi/6]:={{{1/2,1/2},#[[1]],#[[3]]},{#[[1]],#[[2]],{1/2,0},#[[3]]},{#[[1]],#[[2]],{0,0}}}&[pointsoutersnubp4m[phi]]
