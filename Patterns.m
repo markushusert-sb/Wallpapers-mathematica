@@ -1,4 +1,5 @@
 BeginPackage["Patterns`"]
+(*To add a pattern add the edges of its polygons to formmaster and specify the material regions of each polygon with regionsmaster*)
 Needs["Settings`"]
 formssnub::usage="formssnub[phi] returns shapes (2x triangles, 1x quadrilateral) in fundamental region of snub square of angle phi between skew square and its bounding square"
 formssnubwf::usage="formssnubwf[phi] returns wireframe in fundamental region of snub square of angle phi"
@@ -40,6 +41,11 @@ meshgensp4gsquare[len_:1/2]:={{{1/2-len/2,1/2-len/2},{1/2+len/2,1/2-len/2},{1/2+
 {{1/2+len/2,1/2+len/2},{1,1},{0,1},{1/2-len/2,1/2+len/2}},
 {{1/2-len/2,1/2-len/2},{0,0},{0,1},{1/2-len/2,1/2+len/2}}
 }
+meshgensp4gsquarecorner[len_:1/2]:={
+{{1,1},{1-len,1},{1-len,1-len},{1,1-len}},
+{{1-len,1-len},{1,1-len},{1,0},{1-len,0}},
+{{1-len,1-len},{1-len,1},{0,1},{0,1-len}},
+{{1-len,0},{1-len,1-len},{0,1-len},{0,0}}}
 (* Transformation obtained by:
 B={{B1,B2},{B3,B4}};
 a={a1,a2};
@@ -60,11 +66,12 @@ formsmaster[form_String,params_:{}]:=(form/.{
 	"snub"->formssnub[],
 	"meshsnub"->meshgensoutersnub[],
 	"p4gsquare"->meshgensp4gsquare[],
+	"p4gsquarecorner"->meshgensp4gsquarecorner[],
 	"simple_laminate"->simplelaminate[],
 	"snubwf"->formssnubwf[],
 	"snubp4m"->formssnubp4m[]
 })
-regionsmaster[form_String]:=form /.{"p4gsquare"->{1,2,2,2,2},_->{}}
+regionsmaster[form_String]:=form /.{"p4gsquare"->{1,2,2,2,2},"p4gsquarecorner"->{1,2,2,2},_->{}}
 formssnub[phi_:Pi/6]:={{{0,1/2},#[[1]],#[[3]]},{#[[1]],#[[2]],{0,0},#[[3]]},{#[[1]],#[[2]],{1/2,0}}}&[pointsoutersnub[phi]]
 formssnubwf[phi_:Pi/6]:={{#[[2]],#[[1]],#[[3]]}}&[pointsoutersnub[phi]]
 formssnubp4m[phi_:Pi/6]:={{{1/2,1/2},#[[1]],#[[3]]},{#[[1]],#[[2]],{1/2,0},#[[3]]},{#[[1]],#[[2]],{0,0}}}&[pointsoutersnubp4m[phi]]
