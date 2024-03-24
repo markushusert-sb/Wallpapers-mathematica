@@ -201,7 +201,7 @@ toindexform[points_?formsQ]:=Module[{val},
 ]
 quotientgeogen[na_Integer, nb_Integer, group_Association,nfundgeo :{{vecpat..}..}]:=Function[list,{(denorm[#,group]&)/@ list[[1]],list[[2]]}][toindexform[FullSimplify[(quotientpatternnorm[na,nb,group,#]&)/@ nfundmesh]]];
 quotientgeogenwindow[na_Integer, nb_Integer, group_Association,nfundgeo :{{vecpat..}..},wind : {vecpat, vecpat}]:=Function[list,{(denorm[#,group]&)/@ list[[1]],list[[2]]}][
-	toindexform[FullSimplify[restricttowind[wind,(quotientpatternnorm[na,nb,group,#]&)/@ nfundgeo]]]
+(toindexform[FullSimplify[restricttowind[wind,(quotientpatternnorm[na,nb,group,#]&)/@ nfundgeo]]])
 ];
 restricttowind[wind : {vecpat, vecpat}, points_?formsQ] := (
   restricttoedge[{0, -1}, Rationalize[-wind[[1]][[2]]],
@@ -215,7 +215,7 @@ restricttowind[wind : {vecpat, vecpat}, points_?formsQ] := (
    ]
   )
 restricttoedge[n : vecpat, lim_?NumericQ, points_?formsQ] := (
-  Map[restricttoedgepoly[n, lim, #] &, points, {depthlist[points] - 3}] //. {} -> Sequence[] (*remove empty polygons (who lie entirely outside of the window*)
+  Map[restricttoedgepoly[n, lim, #] &, points, {depthlist[points] - 3}] //. {{} -> Sequence[],{vecpat} -> Sequence[],{vecpat,vecpat} -> Sequence[]} (*remove empty polygons (who lie entirely outside of the window*)
   )
 restricttoedge[n : vecpat, lim_?NumericQ] := Sequence[]
 restricttoedgepoly[n : vecpat, lim_?NumericQ,
@@ -245,7 +245,7 @@ quotientmeshgen[na_Integer, nb_Integer, group_Association,nfundmesh :{{vecpat..}
 		]
 	]
 writegeo[val:{vecpat..},idx:{{{_Integer..}..}..},regions :{_Integer...},dir_:"."]:=(
-				Print["writing geo to ",AbsoluteFileName[dir],"regions",regions];
+				Print["writing geo to ",AbsoluteFileName[dir],"regions=",regions];
 				Export[FileNameJoin[{dir,"coords.csv"}],val];
 				Export[FileNameJoin[{dir,"connec.csv"}],Flatten[idx,1]];
 				Export[FileNameJoin[{dir,"regions.csv"}],Flatten[MapIndexed[(ConstantArray[If[Length[regions]>0,regions[[#2]],#2],Length[#1]])&,idx]]])
