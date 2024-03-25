@@ -10,7 +10,6 @@ quotientgeogenwindow::usage="quotientgeogen[ia,ib,group,fundmesh,window] returns
 wpgensquot::usage="wpgens[name] returns generators of quotient groups of <name> in normed form"
 wpfundregnorm::usage="wpfundregnorm[name] returns fundamental region in normed form of group <name>"
 wplattice::usage="wplattice[name] returns lattice type of group <name>"
-Needs["Patterns`"]
 Needs["Settings`"]
 Needs["NDSolve`FEM`"]
 Begin["`Private`"]
