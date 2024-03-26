@@ -11,6 +11,7 @@ wpgensquot::usage="wpgens[name] returns generators of quotient groups of <name> 
 wpfundregnorm::usage="wpfundregnorm[name] returns fundamental region in normed form of group <name>"
 wplattice::usage="wplattice[name] returns lattice type of group <name>"
 Needs["Settings`"]
+Needs["Windows`"]
 Needs["NDSolve`FEM`"]
 Begin["`Private`"]
 wpgensquot = <|
@@ -199,36 +200,9 @@ toindexform[points_?formsQ]:=Module[{val},
 			, {1}]}
 ]
 quotientgeogen[na_Integer, nb_Integer, group_Association,nfundgeo :{{vecpat..}..}]:=Function[list,{(denorm[#,group]&)/@ list[[1]],list[[2]]}][toindexform[FullSimplify[(quotientpatternnorm[na,nb,group,#]&)/@ nfundmesh]]];
-quotientgeogenwindow[na_Integer, nb_Integer, group_Association,nfundgeo :{{vecpat..}..},wind : {vecpat, vecpat}]:=Function[list,{(denorm[#,group]&)/@ list[[1]],list[[2]]}][
+quotientgeogenwindow[na_Integer, nb_Integer, group_Association,nfundgeo :{{vecpat..}..},wind : windpat]:=Function[list,{(denorm[#,group]&)/@ list[[1]],list[[2]]}][
 (toindexform[FullSimplify[restricttowind[wind,(quotientpatternnorm[na,nb,group,#]&)/@ nfundgeo]]])
 ];
-restricttowind[wind : {vecpat, vecpat}, points_?formsQ] := (
-  restricttoedge[{0, -1}, Rationalize[-wind[[1]][[2]]],
-   restricttoedge[{1, 0}, Rationalize[wind[[2]][[1]]],
-    restricttoedge[{0, 1}, Rationalize[wind[[2]][[2]]],
-     restricttoedge[{-1, 0}, Rationalize[-wind[[1]][[1]]],
-      points
-      ]
-     ]
-    ]
-   ]
-  )
-restricttoedge[n : vecpat, lim_?NumericQ, points_?formsQ] := (
-  Map[restricttoedgepoly[n, lim, #] &, points, {depthlist[points] - 3}] //. {{} -> Sequence[],{vecpat} -> Sequence[],{vecpat,vecpat} -> Sequence[]} (*remove empty polygons (who lie entirely outside of the window*)
-  )
-restricttoedge[n : vecpat, lim_?NumericQ] := Sequence[]
-restricttoedgepoly[n : vecpat, lim_?NumericQ,
-  polygon : {vecpat ..}] := (Nest[
-   Replace[#, {p : vecpat, r : vecpat ...} :>
-      treatpoint[n, lim, p, r]] &, polygon, Length[polygon]])
-treatpoint[n : vecpat, lim_?NumericQ, p : vecpat,
-  r : vecpat ...] := ({r,
-   If[N[n . p] > lim,
-    Sequence @@ {If[Length[{r}] == 0 || N[n . {r}[[-1]]] >= lim,
-       Nothing, intersection[n, lim, p, {r}[[-1]]]],
-      If[Length[{r}] == 0 || N[n . {r}[[1]]] >= lim, Nothing,
-       intersection[n, lim, p, {r}[[1]]]]}, p]})
-intersection[n : vecpat, lim_?NumericQ, p1 : vecpat,p2 : vecpat] := FullSimplify[(lim - p2 . n)/(p1 . n - p2 . n)*p1 - (lim - p1 . n)/(p1 . n - p2 . n)*p2]
 
 quotientmeshgen[na_Integer, nb_Integer, group_Association,nfundmesh :{{vecpat..}..},meshopts_:{}]:=Module[{val,idx},
 		{val,idx}=quotientgeogen[na,ng,group,nfundmesh];

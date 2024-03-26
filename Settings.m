@@ -2,6 +2,7 @@ BeginPackage["Settings`"]
 dim=2
 vecpat={Repeated[_?NumericQ,{dim}]}(* pattern denoting vector of euclidean space to be treated*)
 matpat={Repeated[{Repeated[_?NumericQ,{dim}]},{dim}]}
+windpat={{vecpat, _?NumericQ}..}
 (*specify id of corner as well as id of connections linking it to other fundamental regions*)
 fundconnectpat={_Integer, {_Integer ..}}
 formsQ::usage="check for nicely structured array of points"
