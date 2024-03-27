@@ -62,10 +62,26 @@ inntertooutersnubp4m[x:vecpat]:=({{0, 1}, {-1, 0}}.#)+{0,1/2} & [Simplify[{{1/2,
 simplelaminate[]:={{{0,0},{1,0},{1,1/2},{0,1/2}},{{0,1/2},{1,1/2},{1,1},{0,1}}}
 
 pointsoutersnub[phi_:Pi/6] := inntertooutersnub /@ pointsinnersnub[phi]
-pointsoutersnubp4m[phi_:Pi/6] := inntertooutersnubp4m /@ pointsinnersnub[phi]
-(*forms triangle and quadrilateral needed to plot snub square, in normed coordinates*)
-patternsmaster[pattern_String,params_:{}]:=(If[KeyExistsQ[formsdict,pattern],
-(*periodic pattern, params[[1]] is window, params[[2]] is number of repetitions*) quotientgeogenwindow[params[[2]],params[[2]], creategroup[(*base vectors for now hardcoded*){1,0}, {0,1}, groupsdict[pattern]], formsmaster[pattern],params[[1]]],"qp pattern"
+pointsoutersnubp4m[phi_:Pi/6] := inntertooutersnubp4m /@ pointsinnersnub[phi](*forms triangle and quadrilateral needed to plot snub square, in normed coordinates*)
+tau = (1 + Sqrt[5])/2;
+fibonacciline[n_?IntegerQ] := 
+ ReplaceRepeated[{tau}, 
+  q : {Repeated[_, {0, n}]} :> (q /. {tau -> Sequence[tau, 1], 
+      1 -> tau})]
+fibonacciarea[n_?IntegerQ] := 
+ Flatten[Outer[Function[{x, y}, {x, y}], #, #] &[
+   FoldList[Plus, 0, fibonacciline[n][[1 ;; n]]]], 1]
+checkerboardconnec[n_?IntegerQ] := {Outer[
+      Function[{i, j}, 
+       If[EvenQ[i + j], {i + (j - 1)*n, i + 1 + (j - 1)*n, 
+         i + 1 + (j)*n, i + (j)*n}]], #, #] &[Range[n]], 
+   Outer[Function[{i, j}, 
+       If[! EvenQ[i + j], {i + (j - 1)*n, i + 1 + (j - 1)*n, 
+         i + 1 + (j)*n, i + (j)*n}]], #, #] &[Range[n]]} /. {Null -> 
+    Sequence[]}
+generatefibosquare[n_?IntegerQ] := {fibonacciarea[n], checkerboardconnec[n]}
+patternsmaster[pattern_String,params_:{}]:=((*returns {val,idx} where val are coordinate positions and idx is connectivity into val*)If[KeyExistsQ[formsdict,pattern],
+(*periodic pattern, params[[1]] is window, params[[2]] is number of repetitions*) quotientgeogenwindow[params[[2]],params[[2]], creategroup[(*base vectors for now hardcoded*){1,0}, {0,1}, groupsdict[pattern]], formsmaster[pattern],params[[1]]],pattern/.{"fibosquare":>generatefibosquare[params[[2]]]}
 ])
 formsdict=<|
 	"snub"->formssnub[],
