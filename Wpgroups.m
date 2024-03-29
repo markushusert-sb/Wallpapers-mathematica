@@ -4,7 +4,6 @@ creategroup::usage="creategroup[a,b,name] returns lattice group name with base v
 quotientgrafics::usage="quotientgrafics[ia,ib,group] returns list of graphics objects for quotient group of wp-group <group> with <ia> and <ib> times its respective lattice vectors"
 quotientpattern::usage="quotientpattern[ia,ib,group] returns list of lists of coordinates of fund region  for quotient group of wp-group <group> with <ia> and <ib> times its respective lattice vectors" 
 quotientmeshgen::usage="quotientmeshgen[ia,ib,group,fundmesh] returns lists of lists of vecpats corresponging to orbit of fundmesh under group (with duplicates removed)"
-writegeo::usage="writegeo[val,idx,regions]=writes output for gmesh, val=list of points, idx=3rd order list of indices into val,containing groups of shapes, regions=list of integers assigning material region to each group of shapes"
 quotientgeogen::usage="quotientgeogen[ia,ib,group,fundmesh] returns {val,idx} where val are the corner points and idx the connectivity of quotient applied to fundmesh"
 quotientgeogenwindow::usage="quotientgeogen[ia,ib,group,fundmesh,window] returns val,idx like quotientgeogen, except that a section is cut from the mesh is cut by the rectangular window"
 wpgensquot::usage="wpgens[name] returns generators of quotient groups of <name> in normed form"
@@ -33,7 +32,7 @@ of given wp-group
        0}, {{-1, -2}, {0, 1}}}},
    "p4" -> {{{0, 0}, {{0, -1}, {1, 0}}}},
    "p4m" -> {{{0, 0}, {{1, 0}, {0, -1}}}, {{0, 0}, {{0, -1}, {1, 0}}}},
-   "p4g" -> {{{1/2, 1/2}, {{1, 0}, {0, -1}}}, {{0, 
+   "p4m" -> {{{1/2, 1/2}, {{1, 0}, {0, -1}}}, {{0, 
        0}, {{0, -1}, {1, 0}}}},
    "p3" -> {{{0, 0}, {{-1, -1}, {1, 0}}}},
    "p3m1" -> {{{0, 0}, {{-1, -1}, {1, 0}}}, {{0, 
@@ -55,7 +54,7 @@ wpfundregnorm = <|
    "cmm" -> {{0, 0}, {1, 0}, {1, 0}},
    "p4" -> {{0, 0}, {1/2, 0}, {1/2, 1/2}, {0, 1/2}},
    "p4m" -> {{0, 0}, {1/2, 0}, {1/2, 1/2}},
-   "p4g" -> {{0, 0}, {1/2, 0}, {0, 1/2}},
+   "p4m" -> {{0, 0}, {1/2, 0}, {0, 1/2}},
    "p3" -> {{1, 0}, {1/3, 1/3}, {0, 1}, {2/3, 2/3}},
    "p3m1" -> {{1, 0}, {1/3, 1/3}, {2/3, 2/3}},
    "p31m" -> {{1, 0}, {0, 1}, {1/3, 1/3}},
@@ -76,7 +75,7 @@ wplattice = <|
    "cmm" -> "crectang",
    "p4" -> "square",
    "p4m" -> "square",
-   "p4g" -> "square",
+   "p4m" -> "square",
    "p3" -> "hexa",
    "p3m1" -> "hexa",
    "p31m" -> "hexa",
@@ -217,11 +216,6 @@ quotientmeshgen[na_Integer, nb_Integer, group_Association,nfundmesh :{{vecpat..}
 			,meshopts
 		]
 	]
-writegeo[val:{vecpat..},idx:{{{_Integer..}..}..},regions :{_Integer...},dir_:"."]:=(
-				Print["writing geo to ",AbsoluteFileName[dir],"regions=",regions];
-				Export[FileNameJoin[{dir,"coords.csv"}],val];
-				Export[FileNameJoin[{dir,"connec.csv"}],Flatten[idx,1]];
-				Export[FileNameJoin[{dir,"regions.csv"}],Flatten[MapIndexed[(ConstantArray[If[Length[regions]>0,regions[[#2]],#2],Length[#1]])&,idx]]])
 (*Visualize pattern by calculating mass point of polygon and putting L shape in it*)
 areapoly[
   points_] := (Total[

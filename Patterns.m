@@ -2,6 +2,7 @@ BeginPackage["Patterns`"]
 (*To add a pattern add the edges of its polygons to formmaster and specify the material regions of each polygon with regionsmaster*)
 Needs["Settings`"]
 Needs["Wpgroups`"]
+writegeo::usage="writegeo[val,idx,regions]=writes output for gmesh, val=list of points, idx=3rd order list of indices into val,containing groups of shapes, regions=list of integers assigning material region to each group of shapes"
 formssnub::usage="formssnub[phi] returns shapes (2x triangles, 1x quadrilateral) in fundamental region of snub square of angle phi between skew square and its bounding square"
 formssnubwf::usage="formssnubwf[phi] returns wireframe in fundamental region of snub square of angle phi"
 formssnubp4m::usage="formssnub[phi] returns shapes (2x triangles, 1x quadrilateral) in fundamental region of p4m for snub square of angle phi between skew square and its bounding square"
@@ -11,7 +12,7 @@ regionsmaster::usage="formsmaster[form:String] which material region is to be as
 graficsnub::usage="graficsnub[phi] returns grafic object of fundamental region of snub square of angle phi"
 graficsnubface::usage="graficsnubspace[x] where x ist list of list of points plots snubspace indicated by forms in x"
 graficswireframe::usage="graficsnubspace[x,color] where x ist list of list of points and color is an optional color"
-meshgensoutersnub::usage="meshgensoutersnub[phi] returns corners of 2 quad-shells who construct a sunb-square under action of p4g"
+meshgensoutersnub::usage="meshgensoutersnub[phi] returns corners of 2 quad-shells who construct a sunb-square under action of p4m"
 Begin["`Private`"]
 nsin[x_] := Sin[x]/(Sin[x] + Cos[x])
 ncos[x_] := Cos[x]/(Sin[x] + Cos[x])
@@ -37,13 +38,13 @@ meshgensinnersnub[phi_] := {{
 	{0,-ncos[phi]},
   {-nsin[phi],0}}
   }
-meshgensp4gsquare[len_:1/2]:={{{1/2-len/2,1/2-len/2},{1/2+len/2,1/2-len/2},{1/2+len/2,1/2+len/2},{1/2-len/2,1/2+len/2}},
+meshgensp4msquare[len_:1/2]:={{{1/2-len/2,1/2-len/2},{1/2+len/2,1/2-len/2},{1/2+len/2,1/2+len/2},{1/2-len/2,1/2+len/2}},
 {{1/2-len/2,1/2-len/2},{0,0},{1,0},{1/2+len/2,1/2-len/2}},
 {{1/2+len/2,1/2+len/2},{1,1},{1,0},{1/2+len/2,1/2-len/2}},
 {{1/2+len/2,1/2+len/2},{1,1},{0,1},{1/2-len/2,1/2+len/2}},
 {{1/2-len/2,1/2-len/2},{0,0},{0,1},{1/2-len/2,1/2+len/2}}
 }
-meshgensp4gsquarecorner[len_:1/2]:={
+meshgensp4msquarecorner[len_:1/2]:={
 {{1,1},{1-len,1},{1-len,1-len},{1,1-len}},
 {{1-len,1-len},{1,1-len},{1,0},{1-len,0}},
 {{1-len,1-len},{1-len,1},{0,1},{0,1-len}},
@@ -71,31 +72,31 @@ fibonacciline[n_?IntegerQ] :=
 fibonacciarea[n_?IntegerQ] := 
  Flatten[Outer[Function[{x, y}, {x, y}], #, #] &[
    FoldList[Plus, 0, fibonacciline[n][[1 ;; n]]]], 1]
-checkerboardconnec[n_?IntegerQ] := {Outer[
-      Function[{i, j}, 
-       If[EvenQ[i + j], {i + (j - 1)*n, i + 1 + (j - 1)*n, 
-         i + 1 + (j)*n, i + (j)*n}]], #, #] &[Range[n]], 
-   Outer[Function[{i, j}, 
-       If[! EvenQ[i + j], {i + (j - 1)*n, i + 1 + (j - 1)*n, 
-         i + 1 + (j)*n, i + (j)*n}]], #, #] &[Range[n]]} /. {Null -> 
+checkerboardconnec[n_?IntegerQ] := {Flatten[Outer[
+      Function[{j, i}, 
+       If[EvenQ[i + j], {i + (j - 1)*(n + 1), i + 1 + (j - 1)*(n + 1), 
+         i + 1 + (j)*(n + 1), i + (j)*(n + 1)}]], #, #] &[Range[n]],1], 
+   Flatten[Outer[Function[{j, i}, 
+       If[! EvenQ[i + j], {i + (j - 1)*(n + 1), i + 1 + (j - 1)*(n + 1), 
+         i + 1 + (j)*(n + 1), i + (j)*(n + 1)}]], #, #] &[Range[n]],1]} /. {Null -> 
     Sequence[]}
-generatefibosquare[n_?IntegerQ] := {fibonacciarea[n], checkerboardconnec[n]}
+generatefibosquare[n_?IntegerQ] := {N[fibonacciarea[n]], checkerboardconnec[n]}
 patternsmaster[pattern_String,params_:{}]:=((*returns {val,idx} where val are coordinate positions and idx is connectivity into val*)If[KeyExistsQ[formsdict,pattern],
 (*periodic pattern, params[[1]] is window, params[[2]] is number of repetitions*) quotientgeogenwindow[params[[2]],params[[2]], creategroup[(*base vectors for now hardcoded*){1,0}, {0,1}, groupsdict[pattern]], formsmaster[pattern],params[[1]]],pattern/.{"fibosquare":>generatefibosquare[params[[2]]]}
 ])
 formsdict=<|
 	"snub"->formssnub[],
 	"meshsnub"->meshgensoutersnub[],
-	"p4gsquare"->meshgensp4gsquare[],
-	"p4gsquarecorner"->meshgensp4gsquarecorner[],
+	"p4msquare"->meshgensp4msquare[],
+	"p4msquarecorner"->meshgensp4msquarecorner[],
 	"simple_laminate"->simplelaminate[],
 	"snubwf"->formssnubwf[],
 	"snubp4m"->formssnubp4m[]
 |>
-groupsdict=<|"meshsnub"->"p4g","p4gsquare"->"p1","p4gsquarecorner"->"p1","simple_laminate"->"p1"|>
+groupsdict=<|"meshsnub"->"p4m","p4msquare"->"p1","p4msquarecorner"->"p1","simple_laminate"->"p1"|>
 
 formsmaster[form_String,params_:{}]:=(formsdict[form])
-regionsmaster[form_String]:=form /.{"p4gsquare"->{1,2,2,2,2},"p4gsquarecorner"->{1,2,2,2},_->{}}
+regionsmaster[form_String]:=form /.{"p4msquare"->{1,2,2,2,2},"p4msquarecorner"->{1,2,2,2},_->{}}
 formssnub[phi_:Pi/6]:={{{0,1/2},#[[1]],#[[3]]},{#[[1]],#[[2]],{0,0},#[[3]]},{#[[1]],#[[2]],{1/2,0}}}&[pointsoutersnub[phi]]
 formssnubwf[phi_:Pi/6]:={{#[[2]],#[[1]],#[[3]]}}&[pointsoutersnub[phi]]
 formssnubp4m[phi_:Pi/6]:={{{1/2,1/2},#[[1]],#[[3]]},{#[[1]],#[[2]],{1/2,0},#[[3]]},{#[[1]],#[[2]],{0,0}}}&[pointsoutersnubp4m[phi]]
@@ -106,5 +107,10 @@ graficswireframe[x:{vecpat..},color: _?validColorQ : RGBColor["green"]]:=Graphic
 	{Thickness[Large],color,Line[x]}
 ]
 graficsnub[phi_:Pi/6]:=graficsnubface[#]&/@ formssnub[phi]
+writegeo[val:{vecpat..},idx:{{{_Integer..}..}..},regions :{_Integer...},dir_:"."]:=(
+				Print["writing geo to ",AbsoluteFileName[dir],"regions=",regions];
+				Export[FileNameJoin[{dir,"coords.csv"}],val];
+				Export[FileNameJoin[{dir,"connec.csv"}],Flatten[idx,1]];
+				Export[FileNameJoin[{dir,"regions.csv"}],Flatten[MapIndexed[(ConstantArray[If[Length[regions]>0,regions[[#2]],#2],Length[#1]])&,idx]]])
 End[]
 EndPackage[]
