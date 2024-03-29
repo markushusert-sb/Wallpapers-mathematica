@@ -107,8 +107,8 @@ graficswireframe[x:{vecpat..},color: _?validColorQ : RGBColor["green"]]:=Graphic
 	{Thickness[Large],color,Line[x]}
 ]
 graficsnub[phi_:Pi/6]:=graficsnubface[#]&/@ formssnub[phi]
-writegeo[val:{vecpat..},idx:{{{_Integer..}..}..},regions :{_Integer...},dir_:"."]:=(
-				Print["writing geo to ",AbsoluteFileName[dir],"regions=",regions];
+writegeo[val:{vecpat..},idx:{{{_Integer..}..}..},regions :{_Integer...},dir_String:"."]:=(
+				Print["writing geo to ",AbsoluteFileName[dir]," regions=",regions];
 				Export[FileNameJoin[{dir,"coords.csv"}],val];
 				Export[FileNameJoin[{dir,"connec.csv"}],Flatten[idx,1]];
 				Export[FileNameJoin[{dir,"regions.csv"}],Flatten[MapIndexed[(ConstantArray[If[Length[regions]>0,regions[[#2]],#2],Length[#1]])&,idx]]])
