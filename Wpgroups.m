@@ -3,6 +3,7 @@ BeginPackage["Wpgroups`"]
 creategroup::usage="creategroup[a,b,name] returns lattice group name with base vectors a and b as mathematica associations" 
 quotientgrafics::usage="quotientgrafics[ia,ib,group] returns list of graphics objects for quotient group of wp-group <group> with <ia> and <ib> times its respective lattice vectors"
 quotientpattern::usage="quotientpattern[ia,ib,group] returns list of lists of coordinates of fund region  for quotient group of wp-group <group> with <ia> and <ib> times its respective lattice vectors" 
+quotientpatternnorm::usage="quotientpatternnorm[ia,ib,group] returns list of lists of coordinates of fund region  for quotient group of wp-group <group> with <ia> and <ib> normed with regards to lattice vectors" 
 quotientmeshgen::usage="quotientmeshgen[ia,ib,group,fundmesh] returns lists of lists of vecpats corresponging to orbit of fundmesh under group (with duplicates removed)"
 quotientgeogen::usage="quotientgeogen[ia,ib,group,fundmesh] returns {val,idx} where val are the corner points and idx the connectivity of quotient applied to fundmesh"
 quotientgeogenwindow::usage="quotientgeogen[ia,ib,group,fundmesh,window] returns val,idx like quotientgeogen, except that a section is cut from the mesh is cut by the rectangular window"
@@ -182,7 +183,7 @@ SetAttributes[genlayercosets, HoldAll]
 quotientpatternnorm[na_Integer, nb_Integer, group_Association] := 
  (applyquotienttolist[group["fundregnorm"], 
   quotienttorusnorm[na, nb, group]])
-quotientpatternnorm[na_Integer, nb_Integer, group_Association,forms_?formsQ] :=FullSimplify[applyquotienttolist[forms,quotienttorusnorm[na,nb,group]]]
+quotientpatternnorm[na_Integer, nb_Integer, group_Association,forms_?formsQ] :=(Print["generating quotient pattern,",Stack[]];FullSimplify[applyquotienttolist[forms,quotienttorusnorm[na,nb,group]]])
 (*no patterns specified, plot fundamental region*)
 quotientpattern[na_Integer, nb_Integer, group_Association] :=
  Map[denorm[#,group] &, quotientpatternnorm[na, nb, group], {2}] 
@@ -191,8 +192,13 @@ quotientpattern[na_Integer, nb_Integer, group_Association,forms_?formsQ] :=Map[d
 
 (*generate meshes*)
 (*takes in list of forms, see Settings and returns matrix of all corner points (val) and list with indices into wall of same shape as points*)
+toindexform[points_?(Length[Flatten[#]] == 0 &)]:={{},{}}
 toindexform[points_?formsQ]:=Module[{val},
+	Print["calculating connectivity"];
+	Print["depth=",points];
+	Print["length=",Length[Flatten[points, depthlist[points]-3]]];
 	val=DeleteDuplicates[Flatten[points, depthlist[points]-3], sequal];
+	Print["calculating indices"];
 	{val,
 		Map[Function[{plist},DeleteDuplicates[plist,(Union[#1] == Union[#2] &)]],
 			Map[(FirstPosition[val, #][[1]] &), points, {depthlist[points]-2}]

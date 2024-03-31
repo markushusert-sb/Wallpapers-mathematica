@@ -14,8 +14,7 @@ identitytrafo={{0, 0}, {{1, 0}, {0, 1}}};
 affineelepat={vecpat,matpat}
 (*https://mathematica.stackexchange.com/questions/38851/what-is-the-proper-way-to-verify-that-two-expressions-are-equal*)
 Begin["`Private`"]
-formsQ[list_List]:=Length[Level[list, {Depth[N[list]] - 1}]] == Length[Flatten[list]] && 
- MatchQ[Level[list, {Depth[N[list]] - 2}], {vecpat ..}]
+formsQ[list_List]:=Length[Level[list, {Depth[N[list]] - 1}]] == Length[Flatten[list]] && ( MatchQ[Level[list, {Depth[N[list]] - 2}], {vecpat ..}])
 validColorQ[color_] := MatchQ[color, RGBColor[_, _, _] | GrayLevel[_]]
 sequal[a_,b_]:=(True === FullSimplify[a == b])
 depthlist[{}] := 2;
