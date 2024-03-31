@@ -5,14 +5,14 @@ Needs["Wpgroups`"]
 writegeo::usage="writegeo[val,idx,regions]=writes output for gmesh, val=list of points, idx=3rd order list of indices into val,containing groups of shapes, regions=list of integers assigning material region to each group of shapes"
 formssnub::usage="formssnub[phi] returns shapes (2x triangles, 1x quadrilateral) in fundamental region of snub square of angle phi between skew square and its bounding square"
 formssnubwf::usage="formssnubwf[phi] returns wireframe in fundamental region of snub square of angle phi"
-formssnubp4m::usage="formssnub[phi] returns shapes (2x triangles, 1x quadrilateral) in fundamental region of p4m for snub square of angle phi between skew square and its bounding square"
+formssnubp4m::usage="formssnub[phi] returns shapes (2x triangles, 1x quadrilateral) in fundamental region of p4g for snub square of angle phi between skew square and its bounding square"
 formsmaster::usage="formsmaster[form:String,param] selects suitable form based on argument form"
 patternsmaster::usage="patternsmaster[form:String,params] generates coordinates of point in specified patterns and the corresponding connectivity"
 regionsmaster::usage="formsmaster[form:String] which material region is to be assigned to each shape defined by formsmaster, default returns empty list meaning materials are assigned in order of appearance"
 graficsnub::usage="graficsnub[phi] returns grafic object of fundamental region of snub square of angle phi"
 graficsnubface::usage="graficsnubspace[x] where x ist list of list of points plots snubspace indicated by forms in x"
 graficswireframe::usage="graficsnubspace[x,color] where x ist list of list of points and color is an optional color"
-meshgensoutersnub::usage="meshgensoutersnub[phi] returns corners of 2 quad-shells who construct a sunb-square under action of p4m"
+meshgensoutersnub::usage="meshgensoutersnub[phi] returns corners of 2 quad-shells who construct a sunb-square under action of p4g"
 Begin["`Private`"]
 nsin[x_] := Sin[x]/(Sin[x] + Cos[x])
 ncos[x_] := Cos[x]/(Sin[x] + Cos[x])
@@ -93,7 +93,7 @@ formsdict=<|
 	"snubwf"->formssnubwf[],
 	"snubp4m"->formssnubp4m[]
 |>
-groupsdict=<|"meshsnub"->"p4m","p4msquare"->"p1","p4msquarecorner"->"p1","simple_laminate"->"p1"|>
+groupsdict=<|"meshsnub"->"p4g","p4msquare"->"p1","p4msquarecorner"->"p1","simple_laminate"->"p1"|>
 
 formsmaster[form_String,params_:{}]:=(formsdict[form])
 regionsmaster[form_String]:=form /.{"p4msquare"->{1,2,2,2,2},"p4msquarecorner"->{1,2,2,2},_->{}}

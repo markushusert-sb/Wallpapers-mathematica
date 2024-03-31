@@ -33,7 +33,7 @@ of given wp-group
        0}, {{-1, -2}, {0, 1}}}},
    "p4" -> {{{0, 0}, {{0, -1}, {1, 0}}}},
    "p4m" -> {{{0, 0}, {{1, 0}, {0, -1}}}, {{0, 0}, {{0, -1}, {1, 0}}}},
-   "p4m" -> {{{1/2, 1/2}, {{1, 0}, {0, -1}}}, {{0, 
+   "p4g" -> {{{1/2, 1/2}, {{1, 0}, {0, -1}}}, {{0, 
        0}, {{0, -1}, {1, 0}}}},
    "p3" -> {{{0, 0}, {{-1, -1}, {1, 0}}}},
    "p3m1" -> {{{0, 0}, {{-1, -1}, {1, 0}}}, {{0, 
@@ -55,7 +55,7 @@ wpfundregnorm = <|
    "cmm" -> {{0, 0}, {1, 0}, {1, 0}},
    "p4" -> {{0, 0}, {1/2, 0}, {1/2, 1/2}, {0, 1/2}},
    "p4m" -> {{0, 0}, {1/2, 0}, {1/2, 1/2}},
-   "p4m" -> {{0, 0}, {1/2, 0}, {0, 1/2}},
+   "p4g" -> {{0, 0}, {1/2, 0}, {0, 1/2}},
    "p3" -> {{1, 0}, {1/3, 1/3}, {0, 1}, {2/3, 2/3}},
    "p3m1" -> {{1, 0}, {1/3, 1/3}, {2/3, 2/3}},
    "p31m" -> {{1, 0}, {0, 1}, {1/3, 1/3}},
@@ -76,7 +76,7 @@ wplattice = <|
    "cmm" -> "crectang",
    "p4" -> "square",
    "p4m" -> "square",
-   "p4m" -> "square",
+   "p4g" -> "square",
    "p3" -> "hexa",
    "p3m1" -> "hexa",
    "p31m" -> "hexa",
@@ -183,7 +183,7 @@ SetAttributes[genlayercosets, HoldAll]
 quotientpatternnorm[na_Integer, nb_Integer, group_Association] := 
  (applyquotienttolist[group["fundregnorm"], 
   quotienttorusnorm[na, nb, group]])
-quotientpatternnorm[na_Integer, nb_Integer, group_Association,forms_?formsQ] :=(Print["generating quotient pattern,",Stack[]];FullSimplify[applyquotienttolist[forms,quotienttorusnorm[na,nb,group]]])
+quotientpatternnorm[na_Integer, nb_Integer, group_Association,forms_?formsQ] :=(Print["generating quotient pattern"];FullSimplify[applyquotienttolist[forms,quotienttorusnorm[na,nb,group]]])
 (*no patterns specified, plot fundamental region*)
 quotientpattern[na_Integer, nb_Integer, group_Association] :=
  Map[denorm[#,group] &, quotientpatternnorm[na, nb, group], {2}] 
@@ -195,18 +195,19 @@ quotientpattern[na_Integer, nb_Integer, group_Association,forms_?formsQ] :=Map[d
 toindexform[points_?(Length[Flatten[#]] == 0 &)]:={{},{}}
 toindexform[points_?formsQ]:=Module[{val},
 	Print["calculating connectivity"];
-	Print["depth=",points];
+	Print["depth=",depthlist[points]-3];
 	Print["length=",Length[Flatten[points, depthlist[points]-3]]];
-	val=DeleteDuplicates[Flatten[points, depthlist[points]-3], sequal];
+	(*Print["points=",points];*)
+	val=DeleteDuplicates[Flatten[points, depthlist[points]-3]];
 	Print["calculating indices"];
 	{val,
 		Map[Function[{plist},DeleteDuplicates[plist,(Union[#1] == Union[#2] &)]],
 			Map[(FirstPosition[val, #][[1]] &), points, {depthlist[points]-2}]
 			, {1}]}
 ]
-quotientgeogen[na_Integer, nb_Integer, group_Association,nfundgeo :{{vecpat..}..}]:=Function[list,{(denorm[#,group]&)/@ list[[1]],list[[2]]}][toindexform[FullSimplify[(quotientpatternnorm[na,nb,group,#]&)/@ nfundmesh]]];
+quotientgeogen[na_Integer, nb_Integer, group_Association,nfundgeo :{{vecpat..}..}]:=Function[list,{(denorm[#,group]&)/@ list[[1]],list[[2]]}][toindexform[N[(quotientpatternnorm[na,nb,group,#]&)/@ nfundmesh]]];
 quotientgeogenwindow[na_Integer, nb_Integer, group_Association,nfundgeo :{{vecpat..}..},wind : windpat]:=Function[list,{(denorm[#,group]&)/@ list[[1]],list[[2]]}][
-(toindexform[FullSimplify[restricttowind[wind,(quotientpatternnorm[na,nb,group,#]&)/@ nfundgeo]]])
+(toindexform[N[restricttowind[wind,(quotientpatternnorm[na,nb,group,#]&)/@ nfundgeo]]])
 ];
 
 quotientmeshgen[na_Integer, nb_Integer, group_Association,nfundmesh :{{vecpat..}..},meshopts_:{}]:=Module[{val,idx},
