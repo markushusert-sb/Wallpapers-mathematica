@@ -6,15 +6,16 @@ invariants::usage="invariants[tens] yields 5 invariants of 4th order tensor in V
 cauchyschwartz::usage="cauchyschwartz[I2_,J2_,J3_] yields cauchy schwartz inegality" 
 thk::usage="tensor as a function of harmonic decomposition in kelvin notation"
 Kscal::usage="Scale to pass from mandel to kelvin-voigt"
+turn::usage="turn[a,r] turns 2/th or 4/t tensor a by rotation tensor r"
 deductsymmetryclassplane::usage="deductsymmetryclassplane[I2,J2,J3,norm] deducts symmetryclass based on IB"
 Begin["`Private`"]
-ktoh = {{Sqrt[2]/2, 0, Sqrt[2]/2}, {-Sqrt[2]/2, 0, Sqrt[2]/2}, {0, 1, 
-    0}};(*transformation matrix between kelvin and harmonic \
+ktoh = Transpose[{{Sqrt[2]/2, 0, Sqrt[2]/2}, {-Sqrt[2]/2, 0, Sqrt[2]/2}, {0, 1, 
+    0}}];(*transformation matrix between kelvin and harmonic \
 representation*)
-Kscal = {{1, 1, Sqrt[2]/2}, {1, 1, Sqrt[2]/2}, {Sqrt[2]/2, Sqrt[2]/2, 
+Kscal = {{1, 1, Sqrt[2]}, {1, 1, Sqrt[2]}, {Sqrt[2], Sqrt[2], 
     2}};(*to scale tensor into kelvin form from voigt*)
 turn[t : _?MatrixQ, r : _?MatrixQ] := 
- FullSimplify[Transpose[r] . t . r ]
+ FullSimplify[r . t . Transpose[r] ]
 (*turn 4th order tensor t*)
 turn[t : _?VectorQ, r : _?MatrixQ] := FullSimplify[Transpose[r] . t ]
 (*turn 2th order tensor t*)
@@ -45,6 +46,7 @@ deductsymmetryclassplane[I2_, J2_, J3_, norm_] := Module[{limit=10^(-5)},
       "D4",
       "D2"],
      "Z2"]]]
+(*harmonic decomposition of arbitrary tensor in voigt notation*)
 harmdecomp[tens_?MatrixQ/;AnyTrue[Flatten[tens],(!NumericQ[#]&)]] :=(
   Solve[thh == turn[(Kscal*tens), ktoh], {D1, D2, d1, d2, y, 
      k}][[1]])
@@ -52,10 +54,10 @@ tv = {{T1111, T1122, T1112}, {T1122, T2222, T1222}, {T1112, T1222,
     T1212}};
 tvharmdecomp=harmdecomp[tv];
 harmdecomp[tens_?MatrixQ/;MatrixQ[tens,(NumericQ[#]&)]]:=tvharmdecomp /. {T1111->tens[[1,1]],T1122->tens[[1,2]],T2222->tens[[2,2]],T1222->tens[[2,3]],T1112->tens[[1,3]],T1212->tens[[3,3]]}
-invariants[tens_] := 
+invariants[tens_] :=(*harmonic decomposition of numeric tensor in voigt notation*) 
   FullSimplify[{k, y, dk[d1, d2] . dk[d1, d2], 
      Tr[Dmatk[D1, D2] . Dmatk[D1, D2]], 
-     dk[d1, d2] . Dmatk[D1, D2] . dk[d1, d2],Mod[ArcCos[d1/Sqrt[d1^2+d2^2]]/Pi,0.5],Mod[ArcCos[D1/Sqrt[D1^2+D2^2]]/Pi,0.25]} /. harmdecomp[tens]];
+     dk[d1, d2] . Dmatk[D1, D2] . dk[d1, d2],Mod[ArcCos[d1/Sqrt[d1^2+d2^2]]/Pi,1],Mod[ArcCos[D1/Sqrt[D1^2+D2^2]]/Pi,0.5]} /. harmdecomp[tens]];
 (*tensor in kelvin system with harmonic composants*)
 cauchyschwartz[I2_,J2_,J3_]:=I2^2*J2-2*J3^2
 rotmatk[p_] := 
