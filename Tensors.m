@@ -38,15 +38,16 @@ thk := Dmatk[D1, D2] + tdk[d1, d2] + tkk[k] + tyk[y]
 thh := turn[thk, ktoh]
 (*decompose tensor in voigt notation*)
 deductsymmetryclassplane[I2_, J2_, J3_, norm_] := Module[{limit=10^(-5)},
-   If[J2/norm^2 < limit,
-    If[I2/norm^2 < limit,
+   If[Sqrt[J2/norm^2] < limit,
+    If[Sqrt[I2/norm^2] < limit,
      "O(2)",
      "D2"]
-    , If[J3/norm^3 < limit,
-     If[I2/norm^2 < limit,
+    , If[J3<0 ||(J3/norm^3)^(1/3) < limit,
+     If[Sqrt[I2/norm^2] < limit,
       "D4",
       "D2"],
      "Z2"]]]
+angle[x_, y_] := -ArcCos[x/Sqrt[x^2 + y^2]]*If[y != 0, Sign[y], 1]
 (*harmonic decomposition of arbitrary tensor in voigt notation*)
 harmdecomp[tens_?MatrixQ/;AnyTrue[Flatten[tens],(!NumericQ[#]&)]] :=(
   Solve[thh == turn[(Kscal*tens), ktoh], {D1, D2, d1, d2, y, 
@@ -54,11 +55,11 @@ harmdecomp[tens_?MatrixQ/;AnyTrue[Flatten[tens],(!NumericQ[#]&)]] :=(
 tv = {{T1111, T1122, T1112}, {T1122, T2222, T1222}, {T1112, T1222,
     T1212}};
 tvharmdecomp=harmdecomp[tv];
-harmdecomp[tens_?MatrixQ/;MatrixQ[tens,(NumericQ[#]&)]]:=tvharmdecomp /. {T1111->tens[[1,1]],T1122->tens[[1,2]],T2222->tens[[2,2]],T1222->tens[[2,3]],T1112->tens[[1,3]],T1212->tens[[3,3]]}
+harmdecomp[tens_?MatrixQ/;MatrixQ[tens,(NumericQ[#]&)]]:=Echo[tvharmdecomp /. {T1111->tens[[1,1]],T1122->tens[[1,2]],T2222->tens[[2,2]],T1222->tens[[2,3]],T1112->tens[[1,3]],T1212->tens[[3,3]]}]
 invariants[tens_] :=(*harmonic decomposition of numeric tensor in voigt notation*) 
   FullSimplify[{k, y, dk[d1, d2] . dk[d1, d2], 
      Tr[Dmatk[D1, D2] . Dmatk[D1, D2]], 
-     dk[d1, d2] . Dmatk[D1, D2] . dk[d1, d2],ArcCos[d1/Sqrt[d1^2+d2^2]],ArcCos[D1/Sqrt[D1^2+D2^2]]} /. harmdecomp[tens]];
+     dk[d1, d2] . Dmatk[D1, D2] . dk[d1, d2],angle[d1,d2],angle[D1,D2]} /. harmdecomp[tens]];
 (*tensor in kelvin system with harmonic composants*)
 cauchyschwartz[I2_,J2_,J3_]:=I2^2*J2-2*J3^2
 rotmatk[p_] := 
